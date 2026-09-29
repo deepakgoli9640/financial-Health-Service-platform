@@ -1,0 +1,199 @@
+server:
+  port: 8080
+
+spring:
+  application: 
+    name: api-gateway
+
+
+security:
+  oauth2:
+    resourceserver:
+        jwt:
+          issuer-uri:https://keycloak-tfvbnx32lq-el.a.run.app/realms/financial-health
+  cloud:
+    gateway:
+
+      # -------------------------------------------------
+      # ROUTES
+      # -------------------------------------------------'
+      routes:
+
+        # =========== ==============
+        # USER SERVICE
+        # =========================
+        - id: user-service
+          uri: http://user-service:8081
+          predicates:
+            - Path=/api/v1/auth/**,/api/v1/users/**,/api/v1/admins/**
+          filters:
+            - StripPrefix=0
+
+
+        # =========================
+        # ACCOUNT SERVICE
+        # =========================
+        - id: account-service
+          uri: http://account-service:8085
+          predicates:
+            - Path=/api/v1/accounts/**
+          filters:
+            - StripPrefix=0
+
+
+        # =========================
+        # TRANSACTION SERVICE
+        # =========================
+        - id: transaction-service
+          uri: http://transaction-service:8082
+          predicates:
+            - Path=/api/v1/transactions/**
+          filters:
+            - StripPrefix=0
+
+
+        # =========================
+        # PAYMENT GATEWAY SERVICE
+        # =========================
+        - id: payment-gateway-service
+          uri: http://payment-gateway-service:8083
+          predicates:
+            - Path=/api/v1/payments/**
+          filters:
+            - StripPrefix=0
+
+        # =========================
+        # RECONCILIATION SERVICE
+        # =========================
+        - id: reconciliation-service
+          uri: http://reconciliation-service:8084
+          predicates:
+            - Path=/api/v1/reconciliations/**
+          filters:
+            - StripPrefix=0
+
+
+
+      # -------------------------------------------------
+      # GLOBAL DEFAULT FILTERS
+      # -------------------------------------------------
+      default-filters:
+
+        # Remove headers that may expose internal details
+        - RemoveResponseHeader=Server
+
+        # Add correlation ID to every request
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+
+
+      # -------------------------------------------------
+      # HTTP CLIENT CONFIGURATION
+      # -------------------------------------------------
+      httpclient:
+        connect-timeout: 2000
+        response-timeout: 3s
+
+
+  # -------------------------------------------------
+  # REDIS
+  # -------------------------------------------------
+#  data:
+#    redis:
+#      host: localhost
+#      port: 6379
+
+
+# =====================================================
+# RESILIENCE4J
+# =====================================================
+
+#resilience4j:
+#
+#  circuitbreaker:
+#
+#    instances:
+#
+#      userServiceCircuitBreaker:
+#        slidingWindowType: COUNT_BASED
+#        slidingWindowSize: 10
+#        minimumNumberOfCalls: 5
+#        failureRateThreshold: 50
+#        waitDurationInOpenState: 10s
+#        permittedNumberOfCallsInHalfOpenState: 3
+#        automaticTransitionFromOpenToHalfOpenEnabled: true
+#
+#      accountServiceCircuitBreaker:
+#        slidingWindowType: COUNT_BASED
+#        slidingWindowSize: 10
+#        minimumNumberOfCalls: 5
+#        failureRateThreshold: 50
+#        waitDurationInOpenState: 10s
+#        permittedNumberOfCallsInHalfOpenState: 3
+#        automaticTransitionFromOpenToHalfOpenEnabled: true
+#
+#      transactionServiceCircuitBreaker:
+#        slidingWindowType: COUNT_BASED
+#        slidingWindowSize: 10
+#        minimumNumberOfCalls: 5
+#        failureRateThreshold: 50
+#        waitDurationInOpenState: 10s
+#        permittedNumberOfCallsInHalfOpenState: 3
+#        automaticTransitionFromOpenToHalfOpenEnabled: true
+#
+#      paymentServiceCircuitBreaker:
+#        slidingWindowType: COUNT_BASED
+#        slidingWindowSize: 10
+#        minimumNumberOfCalls: 5
+#        failureRateThreshold: 50
+#        waitDurationInOpenState: 15s
+#        permittedNumberOfCallsInHalfOpenState: 3
+#        automaticTransitionFromOpenToHalfOpenEnabled: true
+#
+#      reconciliationServiceCircuitBreaker:
+#        slidingWindowType: COUNT_BASED
+#        slidingWindowSize: 10
+#        minimumNumberOfCalls: 5
+#        failureRateThreshold: 50
+#        waitDurationInOpenState: 15s
+#        permittedNumberOfCallsInHalfOpenState: 3
+#        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+
+# =====================================================
+# ACTUATOR / OBSERVABILITY
+# =====================================================
+
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include:
+#          - health
+#          - info
+#          - metrics
+#          - prometheus
+#          - circuitbreakers
+#          - circuitbreakerevents
+#
+#  endpoint:
+#    health:
+#      show-details: always
+#
+#  health:
+#    circuitbreakers:
+#      enabled: true
+#
+#
+## =====================================================
+## LOGGING
+## =====================================================
+#
+#logging:
+#  level:
+#    root: INFO
+#
+#    org.springframework.cloud.gateway: INFO
+#
+#    reactor.netty.http.client: INFO
+#
+#    io.github.resilience4j: INFO
