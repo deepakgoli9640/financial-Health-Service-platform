@@ -5,8 +5,7 @@ WORKDIR /build
 RUN cat > pom.xml <<'EOF'
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -21,6 +20,7 @@ RUN cat > pom.xml <<'EOF'
             <version>1.30.0</version>
         </dependency>
     </dependencies>
+
 </project>
 EOF
 
@@ -31,7 +31,7 @@ RUN mvn dependency:copy-dependencies \
 
 FROM quay.io/keycloak/keycloak:26.3 AS builder
 
-COPY --from=dependencies /build/providers/* /opt/keycloak/providers/
+COPY --from=dependencies /build/providers/ /opt/keycloak/providers/
 
 RUN /opt/keycloak/bin/kc.sh build
 
